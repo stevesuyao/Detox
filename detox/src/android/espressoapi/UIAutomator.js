@@ -18,6 +18,19 @@ class UiAutomator {
     };
   }
 
+  static uiSelectorByText(text) {
+    return {
+      target: {
+        type: "Class",
+        value: "com.wix.detox.uiautomator.UiAutomator"
+      },
+      method: "uiSelectorByText",
+      args: [{
+        type: "String",
+        value: text,
+      }]
+    };
+  }
 }
 
 module.exports = UiAutomator;

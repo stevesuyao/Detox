@@ -30,6 +30,14 @@ class UiDevice {
     };
   }
 
+  static findObjectByText(element, selector) {
+    return {
+      target: element,
+      method: "findObject",
+      args: [selector],
+    };
+  }
+
   static getDisplaySizeDp(element) {
     return {
       target: element,
