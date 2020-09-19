@@ -16,8 +16,9 @@ class UiDeviceProxy {
           if (prop === 'findObjectByText') {
             return async (...params) => {
               const call = target[prop](invoke.callDirectly(uiAutomaton.uiDevice()), invoke.callDirectly(uiAutomaton.uiSelectorByText(...params)));
-              console.warn('call', call);
+              console.warn('call findObjectByText', call);
               const invokeResult = await this.invocationManager.execute(call);
+              console.warn('invokeResult:', invokeResult);
               if (invokeResult && invokeResult && invokeResult.result) {
                   return invokeResult.result;
               }
