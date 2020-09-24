@@ -1,5 +1,6 @@
 const uiDevice = require('./UIDevice');
 const uiAutomaton = require('./UIAutomator');
+const UiObjectProxy = require('./UiObjectProxy');
 const invoke = require('../../invoke');
 
 class UiDeviceProxy {
@@ -12,18 +13,12 @@ class UiDeviceProxy {
   getUIDevice() {
    return new Proxy(uiDevice, {
       get: (target, prop) => {
-        if (target[prop] !== undefined) {
-          if (prop === 'findObjectByText') {
-            return async (...params) => {
-              const call = target[prop](invoke.callDirectly(uiAutomaton.uiDevice()), invoke.callDirectly(uiAutomaton.uiSelectorByText(...params)));
-              console.warn('call findObjectByText', call);
-              const invokeResult = await this.invocationManager.execute(call);
-              console.warn('invokeResult:', invokeResult);
-              if (invokeResult && invokeResult && invokeResult.result) {
-                  return invokeResult.result;
-              }
-            }
+        if (prop === 'findObject') {
+          return (...params) => {
+            return new UiObjectProxy(this.invocationManager);
           }
+        }
+        if (target[prop] !== undefined) {
           return async (...params) => {
             const call = target[prop](invoke.callDirectly(uiAutomaton.uiDevice()), ...params);
             console.warn('call', call);

@@ -21,6 +21,7 @@ const externalFilesToDownload = {
 // is androidx.test.uiautomator:uiautomator:x.y.z) either in Google i/o 2019 or on the next AMA on the /androiddev subreddit.
 // Note: the 'new' (androidx) and 'old' versions are identical (except for the package name, obviously).
 //  'https://android.googlesource.com/platform/frameworks/uiautomator/+/master/src/com/android/uiautomator/core/UiDevice.java?format=TEXT': '../detox/src/android/espressoapi/UIDevice.js'
+// 'https://android.googlesource.com/platform/frameworks/uiautomator/+/refs/heads/master/src/com/android/uiautomator/core/UiObject.java?format=TEXT': '../detox/src/android/espressoapi/UIObject.js'
 };
 
 const downloadedAndroidFilesMap = Object
