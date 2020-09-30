@@ -21,7 +21,6 @@ class UiDeviceProxy {
         if (target[prop] !== undefined) {
           return async (...params) => {
             const call = target[prop](invoke.callDirectly(uiAutomaton.uiDevice()), ...params);
-            console.warn('call', call);
             const invokeResult = await this.invocationManager.execute(call);
             if (invokeResult && invokeResult && invokeResult.result) {
                 return invokeResult.result;
