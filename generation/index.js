@@ -14,6 +14,7 @@ const externalFilesToDownload = {
 
   // Disabled so as to avoid having to download this each time while there are no code changes...
   // 'https://android.googlesource.com/platform/frameworks/uiautomator/+/master/src/com/android/uiautomator/core/UiDevice.java?format=TEXT': '../detox/src/android/espressoapi/UIDevice.js'
+  // 'https://android.googlesource.com/platform/frameworks/uiautomator/+/refs/heads/master/src/com/android/uiautomator/core/UiObject.java?format=TEXT': '../detox/src/android/espressoapi/UIObject.js
 };
 
 function createAndroidFiles() {
