@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>com.wix</groupId>
+  <artifactId>detox</artifactId>
+  <versioning>
+    <latest>17.10.3-pff</latest>
+    <release>17.10.3-pff</release>
+    <versions>
+      <version>17.5.7-beta</version>
+      <version>17.5.7-revison</version>
+      <version>17.10.3-pff</version>
+    </versions>
+    <lastUpdated>20201027002210</lastUpdated>
+  </versioning>
+</metadata>
