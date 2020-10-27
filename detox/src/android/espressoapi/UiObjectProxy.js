@@ -1,5 +1,5 @@
 const uiObject = require('./UIObject');
-const uiAutomaton = require('./UIAutomator');
+const uiAutomator = require('./UIAutomator');
 const invoke = require('../../invoke');
 
 class UiObjectProxy {
@@ -13,7 +13,7 @@ class UiObjectProxy {
       get: (target, prop) => {
         if (target[prop] !== undefined) {
           return async (...params) => {
-            const call = target[prop](invoke.callDirectly(uiAutomaton.findObjectByText(text)), ...params);
+            const call = target[prop](invoke.callDirectly(uiAutomator.findObjectByText(text)), ...params);
             const invokeResult = await this.invocationManager.execute(call);
             if (invokeResult && invokeResult && invokeResult.result) {
                 return invokeResult.result;
@@ -29,7 +29,7 @@ class UiObjectProxy {
       get: (target, prop) => {
         if (target[prop] !== undefined) {
           return async (...params) => {
-            const call = target[prop](invoke.callDirectly(uiAutomaton.findObjectContainsText(text)), ...params);
+            const call = target[prop](invoke.callDirectly(uiAutomator.findObjectContainsText(text)), ...params);
             const invokeResult = await this.invocationManager.execute(call);
             if (invokeResult && invokeResult && invokeResult.result) {
                 return invokeResult.result;
@@ -45,7 +45,7 @@ class UiObjectProxy {
       get: (target, prop) => {
         if (target[prop] !== undefined) {
           return async (...params) => {
-            const call = target[prop](invoke.callDirectly(uiAutomaton.findObjectByClassName(text)), ...params);
+            const call = target[prop](invoke.callDirectly(uiAutomator.findObjectByClassName(text)), ...params);
             const invokeResult = await this.invocationManager.execute(call);
             if (invokeResult && invokeResult && invokeResult.result) {
                 return invokeResult.result;
@@ -61,7 +61,7 @@ class UiObjectProxy {
       get: (target, prop) => {
         if (target[prop] !== undefined) {
           return async (...params) => {
-            const call = target[prop](invoke.callDirectly(uiAutomaton.findObjectByPackageName(text)), ...params);
+            const call = target[prop](invoke.callDirectly(uiAutomator.findObjectByPackageName(text)), ...params);
             const invokeResult = await this.invocationManager.execute(call);
             if (invokeResult && invokeResult && invokeResult.result) {
                 return invokeResult.result;
@@ -77,7 +77,7 @@ class UiObjectProxy {
       get: (target, prop) => {
         if (target[prop] !== undefined) {
           return async (...params) => {
-            const call = target[prop](invoke.callDirectly(uiAutomaton.findObjectByResourceId(id)), ...params);
+            const call = target[prop](invoke.callDirectly(uiAutomator.findObjectByResourceId(id)), ...params);
             const invokeResult = await this.invocationManager.execute(call);
             if (invokeResult && invokeResult && invokeResult.result) {
                 return invokeResult.result;
@@ -93,7 +93,7 @@ class UiObjectProxy {
       get: (target, prop) => {
         if (target[prop] !== undefined) {
           return async (...params) => {
-            const call = target[prop](invoke.callDirectly(uiAutomaton.findObjectFromSiblingParent(text, resId, packageName, level)), ...params);
+            const call = target[prop](invoke.callDirectly(uiAutomator.findObjectFromSiblingParent(text, resId, packageName, level)), ...params);
             const invokeResult = await this.invocationManager.execute(call);
             if (invokeResult && invokeResult && invokeResult.result) {
                 return invokeResult.result;
