@@ -1,13 +1,13 @@
 {
   "name": "detox",
   "description": "E2E tests and automation for mobile",
-  "version": "17.11.4",
+  "version": "17.11.4-pff",
   "bin": {
     "detox": "local-cli/cli.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/wix/Detox.git"
+    "url": "https://github.com/stevesuyao/Detox.git"
   },
   "nativePackage": true,
   "bugs": {
