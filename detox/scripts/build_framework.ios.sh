@@ -12,13 +12,13 @@ detoxFrameworkPath="${detoxFrameworkDirPath}/Detox.framework"
 
 
 function prepareAndBuildFramework () {
-  if [ -d "$detoxRootPath"/ios ]; then
-    detoxSourcePath="${detoxRootPath}"/ios
-    echo "Dev mode, building from ${detoxSourcePath}"
-    buildFramework "${detoxSourcePath}"
-  else
+  # if [ -d "$detoxRootPath"/ios ]; then
+  #   detoxSourcePath="${detoxRootPath}"/ios
+  #   echo "Dev mode, building from ${detoxSourcePath}"
+  #   buildFramework "${detoxSourcePath}"
+  # else
     extractFramework
-  fi
+  # fi
 }
 
 function extractFramework () {
