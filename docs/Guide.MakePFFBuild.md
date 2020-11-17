@@ -14,18 +14,19 @@
 
 4. Build Android Lib
 
-  `rm -f /detox/Detox-android/*`
+  `cd Detox && rm -rf detox/Detox-android/*`
 
    `RELEASE_VERSION_TYPE=x.x.x-pff yarn package:android`
 
    Running this will build android aar files in `Detox-android` folder with verison `x.x.x-pff`
+
 5. Pack ios lib
 
     `yarn package:ios`
 
     or `cd detox && ./scripts/pack_ios.sh`
 
-    Running this will generate `Detox-ios-src.tbz` file in `detox` folder.
+    Running this will generate `Detox-ios-src.tbz` and `Detox-ios.tbz` files in `detox` folder.
 
 6. git commit and push changes to `pff` branch.
 

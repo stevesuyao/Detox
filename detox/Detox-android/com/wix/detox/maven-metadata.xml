@@ -3,13 +3,11 @@
   <groupId>com.wix</groupId>
   <artifactId>detox</artifactId>
   <versioning>
-    <latest>17.10.3-pff</latest>
-    <release>17.10.3-pff</release>
+    <latest>17.11.4-pff</latest>
+    <release>17.11.4-pff</release>
     <versions>
-      <version>17.5.7-beta</version>
-      <version>17.5.7-revison</version>
-      <version>17.10.3-pff</version>
+      <version>17.11.4-pff</version>
     </versions>
-    <lastUpdated>20201027002210</lastUpdated>
+    <lastUpdated>20201117000554</lastUpdated>
   </versioning>
 </metadata>
