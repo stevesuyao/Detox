@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.wix</groupId>
   <artifactId>detox</artifactId>
-  <version>17.11.4-pff</version>
+  <version>18.2.2-pff</version>
   <packaging>aar</packaging>
   <name>Detox</name>
   <description>Gray box end-to-end testing and automation library for mobile apps</description>
