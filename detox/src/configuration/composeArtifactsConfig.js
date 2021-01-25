@@ -25,21 +25,12 @@ function composeArtifactsConfig({
         video: cliConfig.recordVideos,
         instruments: cliConfig.recordPerformance,
         timeline: cliConfig.recordTimeline,
+        uiHierarchy: cliConfig.captureViewHierarchy,
       },
     }),
     extendArtifactsConfig(deviceConfig.artifacts),
     extendArtifactsConfig(detoxConfig.artifacts),
-    extendArtifactsConfig({
-      rootDir: 'artifacts',
-      pathBuilder: null,
-      plugins: {
-        log: 'none',
-        screenshot: 'manual',
-        video: 'none',
-        instruments: 'none',
-        timeline: 'none',
-      },
-    }),
+    extendArtifactsConfig(false),
   );
 
   artifactsConfig.rootDir = buildDefaultArtifactsRootDirpath(
@@ -53,6 +44,21 @@ function composeArtifactsConfig({
 }
 
 function extendArtifactsConfig(config) {
+  if (config === false) {
+    return extendArtifactsConfig({
+      rootDir: 'artifacts',
+      pathBuilder: null,
+      plugins: {
+        log: 'none',
+        screenshot: 'manual',
+        video: 'none',
+        instruments: 'none',
+        timeline: 'none',
+        uiHierarchy: 'disabled',
+      },
+    });
+  }
+
   const p = config && config.plugins;
   if (!p) {
     return config;

@@ -1,6 +1,7 @@
 const _ = require('lodash');
 
 jest.mock('./utils/logger');
+jest.mock('./utils/trace');
 jest.mock('./configuration');
 jest.mock('./utils/MissingDetox');
 jest.mock('./Detox');
@@ -157,6 +158,49 @@ describe('index (regular)', () => {
 
       it(`should not touch globals with Detox.none.initContext`, () => {
         expect(Detox.none.initContext).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('global API', () => {
+
+      let GenyCloudDriver;
+      beforeEach(() => {
+        jest.mock('./devices/drivers/android/genycloud/GenyCloudDriver');
+        GenyCloudDriver = require('./devices/drivers/android/genycloud/GenyCloudDriver');
+      });
+
+      it('should invoke genymotion-cloud\'s global init API', async () => {
+        await detox.globalInit();
+        expect(GenyCloudDriver.globalInit).toHaveBeenCalled();
+      });
+
+      it('should catch and warn errors from genymotion-cloud driver in global init', async () => {
+        const error = new Error('mocked-error');
+        GenyCloudDriver.globalInit.mockRejectedValue(error);
+
+        await detox.globalInit();
+        expect(logger.warn).toHaveBeenCalledWith(
+          { event: 'GLOBAL_INIT' },
+          'An error occurred trying to globally-init Genymotion-cloud emulator instances!',
+          error,
+        );
+      });
+
+      it('should invoke genymotion-cloud\'s global cleanup API', async () => {
+        await detox.globalCleanup();
+        expect(GenyCloudDriver.globalCleanup).toHaveBeenCalled();
+      });
+
+      it('should catch and warn errors from genymotion-cloud driver int global cleanup', async () => {
+        const error = new Error('mocked-error');
+        GenyCloudDriver.globalCleanup.mockRejectedValue(error);
+
+        await detox.globalCleanup();
+        expect(logger.warn).toHaveBeenCalledWith(
+          { event: 'GLOBAL_CLEANUP' },
+          'An error occurred trying to shut down Genymotion-cloud emulator instances!',
+          error,
+        );
       });
     });
   });

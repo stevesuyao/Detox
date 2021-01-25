@@ -4,6 +4,7 @@ const {joinArgs} = require('../../../../utils/argparse');
 const exec = require('../../../../utils/exec');
 const log = require('../../../../utils/logger').child({ __filename });
 const environment = require('../../../../utils/environment');
+const { quote } = require('../../../../utils/shellQuote');
 
 class AppleSimUtils {
   async setPermissions(udid, bundleId, permissionsObj) {
@@ -114,6 +115,16 @@ class AppleSimUtils {
     await this._printLoggingHint(udid, bundleId);
 
     return this._parseLaunchId(result);
+  }
+
+  printLaunchHint(udid, bundleId, launchArgs, languageAndLocale) {
+    log.info({},
+      'Waiting for you to manually launch your app in Xcode.\n' +
+      'Make sure to pass the launch arguments listed below:\n' +
+      '  --args\n' +
+      this._mergeLaunchArgs(launchArgs, languageAndLocale).map(keyValue => `  ${quote(keyValue)}\n`).join(''),
+      '\nPress any key to continue...'
+    );
   }
 
   async sendToHome(udid) {
@@ -296,36 +307,41 @@ class AppleSimUtils {
     return parsed;
   }
 
-  _joinLaunchArgs(launchArgs) {
-    return _.map(launchArgs, (v, k) => `-${k} "${v}"`).join(' ').trim();
+  _mergeLaunchArgs(launchArgs, languageAndLocale) {
+    const args = {
+      ...launchArgs,
+    };
+
+    if (languageAndLocale) {
+      if (languageAndLocale.language) {
+        args.AppleLanguages = `(${languageAndLocale.language})`;
+      }
+
+      if (languageAndLocale.locale) {
+        args.AppleLocale = languageAndLocale.locale;
+      }
+    }
+
+    return _.map(args, (v, k) => [`-${k}`, `${v}`]);
   }
 
   async _launchMagically(frameworkPath, udid, bundleId, launchArgs, languageAndLocale) {
-    const args = this._joinLaunchArgs(launchArgs);
-
     let dylibs = `${frameworkPath}/Detox`;
     if (process.env.SIMCTL_CHILD_DYLD_INSERT_LIBRARIES) {
       dylibs = `${process.env.SIMCTL_CHILD_DYLD_INSERT_LIBRARIES}:${dylibs}`;
     }
 
+    const cmdArgs = quote(_.flatten(this._mergeLaunchArgs(launchArgs, languageAndLocale)));
     let launchBin = `SIMCTL_CHILD_DYLD_INSERT_LIBRARIES="${dylibs}" ` +
-      `/usr/bin/xcrun simctl launch ${udid} ${bundleId} --args ${args}`;
+      `/usr/bin/xcrun simctl launch ${udid} ${bundleId} --args ${cmdArgs}`;
 
-      if (!!languageAndLocale && !!languageAndLocale.language) {
-        launchBin += ` -AppleLanguages "(${languageAndLocale.language})"`;
-      }
-
-      if (!!languageAndLocale && !!languageAndLocale.locale) {
-        launchBin += ` -AppleLocale ${languageAndLocale.locale}`;
-      }
-
-    const options = {
+    const result = await exec.execWithRetriesAndLogs(launchBin, {
       retries: 1,
       statusLogs: {
         trying: `Launching ${bundleId}...`,
       },
-    };
-    const result = await exec.execWithRetriesAndLogs(launchBin, options);
+    });
+
     return result;
   }
 
@@ -368,6 +384,20 @@ class AppleSimUtils {
 
   async statusBarReset(udid) {
     await this._execSimctl({ cmd: `status_bar ${udid} clear` });
+  }
+
+  async getPid(udid, bundleId) {
+    const result = await this._execSimctl({
+      cmd: `spawn ${udid} launchctl list | grep -F '${bundleId}' || true`,
+      retries: 0,
+    });
+
+    if (result && result.stdout) {
+      const [pid] = result.stdout.split(/\s/);
+      return Number(pid);
+    }
+
+    return Number.NaN;
   }
 }
 

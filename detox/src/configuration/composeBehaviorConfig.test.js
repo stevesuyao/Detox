@@ -25,12 +25,27 @@ describe('composeBehaviorConfig', () => {
       init: {
         exposeGlobals: true,
         reinstallApp: true,
-        launchApp: true,
       },
+      launchApp: 'auto',
       cleanup: {
         shutdownDevice: false,
       },
     })
+  });
+
+  describe('if a custom config has only .launchApp = "manual" override', () => {
+    beforeEach(() => {
+      detoxConfig = {
+        behavior: { launchApp: 'manual' }
+      };
+    });
+
+    it('should implicitly override behavior.init.reinstallApp = false', () => {
+      const expected = _.cloneDeep(detoxConfig.behavior);
+      const actual = composed();
+
+      expect(actual.init.reinstallApp).toBe(false);
+    });
   });
 
   describe('if detox config is set', () => {
@@ -40,8 +55,8 @@ describe('composeBehaviorConfig', () => {
           init: {
             exposeGlobals: false,
             reinstallApp: false,
-            launchApp: false,
           },
+          launchApp: 'manual',
           cleanup: {
             shutdownDevice: true,
           },
@@ -63,8 +78,8 @@ describe('composeBehaviorConfig', () => {
             init: {
               exposeGlobals: true,
               reinstallApp: true,
-              launchApp: true,
             },
+            launchApp: 'auto',
             cleanup: {
               shutdownDevice: false,
             },
@@ -83,7 +98,6 @@ describe('composeBehaviorConfig', () => {
         beforeEach(() => {
           userParams = {
             initGlobals: false,
-            launchApp: false,
             reuse: false,
           };
         });
@@ -93,8 +107,8 @@ describe('composeBehaviorConfig', () => {
             init: {
               exposeGlobals: false,
               reinstallApp: true,
-              launchApp: false,
             },
+            launchApp: 'auto',
             cleanup: {
               shutdownDevice: false,
             }
@@ -112,8 +126,8 @@ describe('composeBehaviorConfig', () => {
               init: {
                 exposeGlobals: false,
                 reinstallApp: false,
-                launchApp: false,
               },
+              launchApp: 'auto',
               cleanup: {
                 shutdownDevice: true,
               }
@@ -124,4 +138,3 @@ describe('composeBehaviorConfig', () => {
     });
   });
 });
-

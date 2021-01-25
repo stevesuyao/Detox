@@ -1,13 +1,13 @@
-const _ = require('lodash');
-
-class Recipe {
+class GenyRecipe {
   constructor(rawRecipe) {
-    Object.assign(this, _.pick(rawRecipe, 'uuid', 'name'));
+    this.uuid = rawRecipe.uuid;
+    this.name = rawRecipe.name || 'Anonymous GMSaaS Recipe';
+    this._description = (rawRecipe.name ? `${this.name} (${this.uuid})` : `Recipe of ${this.uuid}`);
   }
 
   toString() {
-    return this.name;
+    return this._description;
   }
 }
 
-module.exports = Recipe;
+module.exports = GenyRecipe;

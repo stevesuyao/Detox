@@ -1,8 +1,17 @@
 const _ = require('lodash');
 const debug = require('../utils/debug'); // debug utils, leave here even if unused
+const { traceCall } = require('../utils/trace');
+const log = require('../utils/logger').child({ __filename });
 
 class Device {
-  constructor({ deviceConfig, deviceDriver, emitter, sessionConfig }) {
+  constructor({
+    behaviorConfig,
+    deviceConfig,
+    deviceDriver,
+    emitter,
+    sessionConfig
+  }) {
+    this._behaviorConfig = behaviorConfig;
     this._deviceConfig = deviceConfig;
     this._sessionConfig = sessionConfig;
     this._emitter = emitter;
@@ -13,20 +22,29 @@ class Device {
   }
 
   async prepare() {
-    this._deviceId = await this.deviceDriver.acquireFreeDevice(this._deviceConfig.device || this._deviceConfig.name);
-    this._bundleId = await this.deviceDriver.getBundleIdFromBinary(this._deviceConfig.binaryPath);
-
     await this.deviceDriver.prepare();
+
+    this._deviceId = await traceCall('acquireDevice', () =>
+      this.deviceDriver.acquireFreeDevice(this._deviceConfig.device || this._deviceConfig.name));
+    this._bundleId = await this.deviceDriver.getBundleIdFromBinary(this._deviceConfig.binaryPath);
   }
 
-  async launchApp(params = {newInstance: false}, bundleId) {
+  async launchApp(params = {}, bundleId = this._bundleId) {
+    return traceCall('launchApp', () => this._doLaunchApp(params, bundleId));
+  }
+
+  async _doLaunchApp(params, bundleId) {
+    const deviceId = this._deviceId;
     const payloadParams = ['url', 'userNotification', 'userActivity'];
     const hasPayload = this._assertHasSingleParam(payloadParams, params);
+    const newInstance = params.newInstance !== undefined
+      ? params.newInstance
+      : this._processes[bundleId] == null;
 
     if (params.delete) {
       await this._terminateApp();
       await this._reinstallApp();
-    } else if (params.newInstance) {
+    } else if (newInstance) {
       await this._terminateApp();
     }
 
@@ -47,28 +65,32 @@ class Device {
     }
 
     if (params.permissions) {
-      await this.deviceDriver.setPermissions(this._deviceId, this._bundleId, params.permissions);
+      await this.deviceDriver.setPermissions(deviceId, bundleId, params.permissions);
     }
 
     if (params.disableTouchIndicators) {
       baseLaunchArgs['detoxDisableTouchIndicators'] = true;
     }
 
-    const _bundleId = bundleId || this._bundleId;
-    if (this._isAppInBackground(params, _bundleId)) {
+    if (this._isAppInBackground(params, bundleId)) {
       if (hasPayload) {
         await this.deviceDriver.deliverPayload({...params, delayPayload: true});
       }
     }
 
-    const processId = await this.deviceDriver.launchApp(this._deviceId, _bundleId, this._prepareLaunchArgs(baseLaunchArgs), params.languageAndLocale);
-    this._processes[_bundleId] = processId;
+    let processId;
+    if (this._behaviorConfig.launchApp === 'manual') {
+      processId = await this.deviceDriver.waitForAppLaunch(deviceId, bundleId, this._prepareLaunchArgs(baseLaunchArgs), params.languageAndLocale);
+    } else {
+      processId = await this.deviceDriver.launchApp(deviceId, bundleId, this._prepareLaunchArgs(baseLaunchArgs), params.languageAndLocale);
+      await this.deviceDriver.waitUntilReady();
+      await this.deviceDriver.waitForActive();
+    }
+    this._processes[bundleId] = processId;
 
-    await this.deviceDriver.waitUntilReady();
-    await this.deviceDriver.waitForActive();
     await this._emitter.emit('appReady', {
-      deviceId: this._deviceId,
-      bundleId: _bundleId,
+      deviceId,
+      bundleId,
       pid: processId,
     });
 
@@ -113,8 +135,8 @@ class Device {
     params[launchKey] = payloadFilePath;
   }
 
-  _isAppInBackground(params, _bundleId) {
-    return !params.delete && !params.newInstance && this._processes[_bundleId];
+  _isAppInBackground(params, bundleId) {
+    return !params.delete && !params.newInstance && this._processes[bundleId];
   }
 
   _assertHasSingleParam(singleParams, params) {
@@ -131,7 +153,9 @@ class Device {
     return (paramsCounter === 1);
   }
 
-  /**deprecated */
+  /**
+   * @deprecated
+   */
   async relaunchApp(params = {}, bundleId) {
     if (params.newInstance === undefined) {
       params['newInstance'] = true;
@@ -181,23 +205,27 @@ class Device {
   async installApp(binaryPath, testBinaryPath) {
     const _binaryPath = binaryPath || this._deviceConfig.binaryPath;
     const _testBinaryPath = testBinaryPath || this._deviceConfig.testBinaryPath;
-    await this.deviceDriver.installApp(this._deviceId, _binaryPath, _testBinaryPath);
+    await traceCall('appInstall', () =>
+      this.deviceDriver.installApp(this._deviceId, _binaryPath, _testBinaryPath));
   }
 
   async uninstallApp(bundleId) {
     const _bundleId = bundleId || this._bundleId;
-    await this.deviceDriver.uninstallApp(this._deviceId, _bundleId);
+    await traceCall('appUninstall', () =>
+      this.deviceDriver.uninstallApp(this._deviceId, _bundleId));
   }
 
   async installUtilBinaries() {
     const paths = this._deviceConfig.utilBinaryPaths;
     if (paths) {
-      await this.deviceDriver.installUtilBinaries(this._deviceId, paths);
+      await traceCall('installUtilBinaries', () =>
+        this.deviceDriver.installUtilBinaries(this._deviceId, paths));
     }
   }
 
   async reloadReactNative() {
-    await this.deviceDriver.reloadReactNative();
+    await traceCall('reloadRN', () =>
+      this.deviceDriver.reloadReactNative());
   }
 
   async openURL(params) {

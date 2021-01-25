@@ -24,6 +24,10 @@ detox <command> [options]
 | [build](#build)            | **Convenience method.** Run the command defined in 'build' property of the specified configuration. |
 | [test](#test)              | Initiating your test suite |
 | [run-server](#run-server)  | Starts a standalone detox server |
+| [build-framework-cache](#cache) | Builds the Detox cache |
+| [clean-framework-cache](#cache) | Cleans the Detox cache |
+| [rebuild-framework-cache](#cache) | Rebuilds the Detox cache |
+| [recorder](#recorder) | Starts a [Detox Recorder](https://github.com/wix/DetoxRecorder) recording |
 | clean-framework-cache      | **MacOS only.** Delete all compiled framework binaries from ~/Library/Detox, they will be rebuilt on 'npm install' or when running 'build-framework-cache'
 | build-framework-cache      | **MacOS only.** Build Detox.framework to ~/Library/Detox. The framework cache is specific for each combination of Xcode and Detox versions
 
@@ -70,13 +74,14 @@ Initiating your test suite. <sup>[[1]](#notice-passthrough)</sup>
 | -o, --runner-config \<config\>                | Test runner config file, defaults to 'e2e/mocha.opts' for mocha and 'e2e/config.json' for jest. |
 | -n, --device-name [name]                      | Override the device name specified in a configuration. Useful for running a single build configuration on multiple devices. |
 | -l, --loglevel [value]                        | Log level: fatal, error, warn, info, verbose, trace |
-| -d, --debug-synchronization \<value\>         | When an action/expectation takes a significant amount time use this option to print device synchronization status. The status will be printed if the action takes more than [value]ms to complete |
+| -d, --debug-synchronization \<value\>         | [iOS Only] Customize how long an action/expectation can take to complete before Detox starts querying the app why it is busy. By default, the app status will be printed if the action takes more than 10s to complete. |
 | -a, --artifacts-location \<path\>             | Artifacts (logs, screenshots, etc) root directory.<sup>[[2]](#notice-artifacts)</sup> |
 | --record-logs [failing/all/none]              | Save logs during each test to artifacts directory. Pass "failing" to save logs of failing tests only. The default value is **none**. |
 | --take-screenshots [manual/failing/all/none]  | Save screenshots before and after each test to artifacts directory. Pass "failing" to save screenshots of failing tests only. The default value is **manual**. |
 | --record-videos [failing/all/none]            | Save screen recordings of each test to artifacts directory. Pass "failing" to save recordings of failing tests only. The default value is **none**. |
 | --record-performance [all/none]               | [iOS Only] Save Detox Instruments performance recordings of each test to artifacts directory. The default value is **none**. |
 | --record-timeline [all/none] | [Jest Only] Record tests and events timeline, for visual display on the [chrome://tracing](chrome://tracing) tool. The default value is **none**. |
+| --capture-view-hierarchy [enabled/disabled]   | [iOS Only] Capture `*.uihierarchy` snapshots on view action errors and `device.captureViewHierarchy()` calls. The default value is **disabled**. |
 | -R, --retries                                 | [Jest Circus Only] Re-spawn the test runner for individual failing suite files until they pass, or &lt;N&gt; times at least.|
 | -r, --reuse                                   | Reuse existing installed app (do not delete + reinstall) for a faster run. |
 | -u, --cleanup                                 | Shutdown simulator when test is over, useful for CI scripts, to make sure detox exists cleanly with no residue |
@@ -148,5 +153,10 @@ Start a standalone Detox server
 | --no-color             | Disable colorful logs |
 | --help                 | Show help |
 
+### recorder
 
+If you have installed [Detox Recorder](https://github.com/wix/DetoxRecorder) in your project, you can use this command to start a new recording.
 
+### Cache
+
+Detox stores a cached version of its framework in `~/Library/Detox`. A different cache folder is used for different Xcode and Detox versions. Use the various cache commands to clean or build this cache.

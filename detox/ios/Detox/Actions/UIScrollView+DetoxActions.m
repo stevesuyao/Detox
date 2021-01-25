@@ -124,8 +124,8 @@ else \
 DTX_ALWAYS_INLINE
 static NSString* _DTXScrollDirectionDescriptionWithOffset(CGPoint offset)
 {
-
-//	return [NSString stringWithFormat:@"%@ for %@ points", offset.x < 0 ? @"right" : offset.x > 0 ? @"left" : offset.y < 0 ? @"down" : @"up", @(MAX(fabs(offset.x), fabs(offset.y)))];
+	
+	//	return [NSString stringWithFormat:@"%@ for %@ points", offset.x < 0 ? @"right" : offset.x > 0 ? @"left" : offset.y < 0 ? @"down" : @"up", @(MAX(fabs(offset.x), fabs(offset.y)))];
 	
 	return offset.x < 0 ? @"right" : offset.x > 0 ? @"left" : offset.y < 0 ? @"down" : @"up";
 }
@@ -304,7 +304,7 @@ if(isnan(normalizedStartingPoint.main) || normalizedStartingPoint.main < 0 || no
 		}
 	}
 	
-	DTXViewAssert(strict == NO || successfullyAppliedScrolls > 0, self.dtx_viewDebugAttributes, @"Unable to scroll %@ in “%@”", _DTXScrollDirectionDescriptionWithOffset(offset), self.dtx_shortDescription);
+	DTXViewAssert(strict == NO || successfullyAppliedScrolls > 0, self.dtx_elementDebugAttributes, @"Unable to scroll %@ in “%@”", _DTXScrollDirectionDescriptionWithOffset(offset), self.dtx_shortDescription);
 	
 	self.dtx_disableDecelerationForScroll = NO;
 //	self.bounces = oldBounces;

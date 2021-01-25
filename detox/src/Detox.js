@@ -153,6 +153,7 @@ class Detox {
     });
 
     this.device = new Device({
+      behaviorConfig: this._behaviorConfig,
       deviceConfig: this._deviceConfig,
       emitter: this._eventEmitter,
       deviceDriver,
@@ -183,12 +184,6 @@ class Detox {
       await this.device.installApp();
     }
     await this.device.installUtilBinaries();
-
-    if (behaviorConfig.launchApp) {
-      await this.device.launchApp({
-        newInstance: true
-      });
-    }
 
     return this;
   }

@@ -1,6 +1,6 @@
 # Configuration Options
 
-## Configuration file
+## Configuration File
 
 In order for Detox to know what device & app to use (and a lot more, actually), it needs some configuration to be statically available in a configuration file. It supports both standalone configuration files, and a configuration bundling inside the project's `package.json`.
 
@@ -27,9 +27,9 @@ Please find the [Detox example app](/examples/demo-react-native/detox.config.js)
 |`type`| Device type, available options are `ios.simulator`, `ios.none`, `android.emulator`, and `android.attached`. |
 |`binaryPath`| Relative path to the ipa/app/apk due to be tested (make sure you build the app in a project relative path) |
 |`testBinaryPath`| (optional, Android only): relative path to the test app (apk) |
-|`utilBinaryPaths`| (optional, Android only): An **array** of relative paths of _utility_ app (apk) binary-files to preinstall on the tested devices - once before the test excution begins.<br />Note: these are not effected by various install-lifecycle events, such as launching an app with `device.launchApp({delete: true})`, which reinstalls the app. A good example of why this might come in handy is [Test Butler](https://github.com/linkedin/test-butler). |
+|`utilBinaryPaths`| (optional, Android only): An **array** of relative paths of _utility_ app (apk) binary-files to preinstall on the tested devices - once before the test execution begins.<br />Note: these are not effected by various install-lifecycle events, such as launching an app with `device.launchApp({delete: true})`, which reinstalls the app. A good example of why this might come in handy is [Test Butler](https://github.com/linkedin/test-butler). |
 |`device`| Device query, e.g. `{ "byType": "iPhone 11 Pro" }` for iOS simulator, `{ "avdName": "Pixel_2_API_29" }` for Android emulator or `{ "adbName": "<pattern>" }` for attached Android device with name matching the regex. |
-|`build`| **[optional]** Build command (either `xcodebuild`, `react-native run-ios`, etc...), will be later available through detox CLI tool.|
+|`build`| **[optional]** Build command (normally an `xcodebuild` command you use to build your app), which can be called later using Detox CLI tool as a convenience. |
 
 **Example:**
 
@@ -154,9 +154,9 @@ you have a few options to change. These are the default behavior values:
     "behavior": {
       "init": {
         "reinstallApp": true,
-        "launchApp": true,
         "exposeGlobals": true
       },
+      "launchApp": "auto",
       "cleanup": {
         "shutdownDevice": false
       }
@@ -165,21 +165,13 @@ you have a few options to change. These are the default behavior values:
 }
 ```
 
-For example, if you want to launch your tested app manually, e.g. via `device.launchApp()`,
-you should specify in the Detox configuration:
-
-```json
-{
-  "behavior": {
-    "init": {
-      "launchApp": false
-    }
-  }
-}
-```
+The `launchApp: "auto"` setting can be changed to `"manual"` for cases when you want to debug the
+native codebase when running Detox tests. Usually **you never need that**, but if you do, follow the
+[Debugging Apps in Android Studio During a Test](Guide.DebuggingInAndroidStudio.md) guide to learn
+more about this. When set to `manual`, it changes the default value of `reinstallApp` to `false`.
 
 Setting `reinstallApp: false` will make the tests reuse the currently installed app on the device,
-provided you have installed it beforehand.
+provided you have installed it beforehand explicitly or manually.
 
 If you do not wish to leak Detox globals (`expect`, `device`, `by`, etc.) to the global
 scope, you can set `"exposeGlobals": false` and destructure them respectively from the
@@ -201,7 +193,22 @@ Detox can either initialize a server using a generated configuration, or can be 
   }
 ```
 
-Session can be set also per configuration — then it takes a higher priority over the global session config:
+When you define a session config, the Detox server won't start automatically anymore — it is assumed that
+you will be running it independently via `detox run-server` CLI command. Alternatively, you can set the
+`autoStart` property to be explicitly `true`:
+
+```diff
+   "session": {
++    "autoStart": true,
+     "server": "ws://localhost:8099",
+     "sessionId": "YourProjectSessionId"
+```
+
+Defining an explicit session config with `server` and `sessionId` also means you cannot use multiple workers,
+since the specified port will become busy for any test worker next to the first one to occupy it.
+
+Session can be set also per device configuration — then it takes a higher priority over the global
+session config:
 
 ```json
 {  
@@ -230,13 +237,15 @@ The status will be printed if the action takes more than _[N]_ ms to complete.
 }
 ```
 
-## detox-cli
+To disable `debugSynchronization` explicitly, use `0`.
+
+## `detox-cli`
 
 ### Build Configuration
 
 In your detox config (in `package.json`) paste your build command into the configuration's `build` field.
 The build command will be triggered when running `detox build`.
-**This is only a convience method, to help you manage building multiple configurations of your app and couple them to your tests. You can also choose not to use it and provide a compiled `app` by yourself.**
+**This is only a convenience method, to help you manage building multiple configurations of your app and couple them to your tests. You can also choose not to use it and provide a compiled `app` by yourself.**
 
 You can choose to build your project in any of these ways...
 
@@ -283,7 +292,7 @@ where `./e2e` is the path to your Detox tests folder.
   detox test ./e2e --configuration yourConfiguration
   ```
 
-### Faster test runs with app reuse
+### Faster Test Runs with App Reuse
 
 By default the app is removed, reinstalled and launched before each run.
 Starting fresh is critical in CI but in dev you might be able to save time between test runs and reuse the app that was previously installed in the simulator. To do so use the `reuse` flag and run your tests like this:

@@ -1,39 +1,37 @@
 const Instance = require('./dto/GenyInstance');
 
 class GenyInstanceLookupService {
-  constructor(genyCloudExec, instanceNaming, deviceRegistry) {
+  constructor(genyCloudExec, instanceNaming, genyCloudDeviceRegistry) {
     this.genyCloudExec = genyCloudExec;
     this.instanceNaming = instanceNaming;
-    this.deviceRegistry = deviceRegistry;
+    this.deviceRegistry = genyCloudDeviceRegistry;
   }
 
-  async findFreeInstance(recipeUUID) {
-    const freeInstances = await this._getRelevantInstances(recipeUUID);
+  async findFreeInstance() {
+    const freeInstances = await this._getRelevantInstances();
     return (freeInstances[0] || null);
   }
 
-  async _getRelevantInstances(recipeUUID) {
-    const isRelevant = (instance) =>
-      instance.recipeUUID === recipeUUID &&
-      !instance.isTerminated() &&
-      this.instanceNaming.isFamilial(instance.name) &&
-      this._isInstanceFree(instance);
+  async getInstance(instanceUUID) {
+    const { instance } = await this.genyCloudExec.getInstance(instanceUUID);
+    return new Instance(instance);
+  }
 
-    const result = await this._getAllInstances();
-    return result.filter(isRelevant);
+  async _getRelevantInstances() {
+    const { rawDevices: takenInstanceUUIDs } = this.deviceRegistry.getRegisteredDevices();
+    const isRelevant = (instance) =>
+      (instance.isOnline() || instance.isInitializing()) &&
+      this.instanceNaming.isFamilial(instance.name) &&
+      !takenInstanceUUIDs.includes(instance.uuid);
+
+    const instances = await this._getAllInstances();
+    return instances.filter(isRelevant);
   }
 
   async _getAllInstances() {
     return (await this.genyCloudExec.getInstances())
       .instances
       .map((rawInstance) => new Instance(rawInstance));
-  }
-
-  _isInstanceFree(instance) {
-    if (!instance.isAdbConnected()) {
-      return instance;
-    }
-    return !this.deviceRegistry.isDeviceBusy(instance.adbName);
   }
 }
 

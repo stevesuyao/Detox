@@ -25,7 +25,7 @@ describe('Client', () => {
 
     Client = require('./Client');
     log = require('../utils/logger');
-    log.level.mockReturnValue(bunyan.DEBUG)
+    log.getDetoxLevel = () => 'debug';
   });
 
   it(`reloadReactNative() - should receive ready from device and resolve`, async () => {
@@ -159,11 +159,11 @@ describe('Client', () => {
     expect(client.ws.send).toHaveBeenCalledTimes(3);
   });
 
-  it(`cleanup() - if connected should accept testeeDisconnected action too`, async () => {
+  it(`cleanup() - if connected should accept appDisconnected action too`, async () => {
     await connect();
     client.ws.send.mockReturnValueOnce(response("ready", {}, 1));
     await client.waitUntilReady();
-    client.ws.send.mockReturnValueOnce(response("testeeDisconnected", {}, 2));
+    client.ws.send.mockReturnValueOnce(response("appDisconnected", {}, 2));
     await client.cleanup();
 
     expect(client.ws.send).toHaveBeenCalledTimes(3);
@@ -298,7 +298,7 @@ describe('Client', () => {
   });
 
   it(`execute() - "testFailed" result should throw with view-hierarchy hint`, async () => {
-    log.level.mockReturnValue(bunyan.INFO);
+    log.getDetoxLevel = () => 'info';
 
     await connect();
     client.ws.send.mockReturnValueOnce(response("testFailed",  {details: "this is an error", viewHierarchy: 'mock-hierarchy'}, 1));

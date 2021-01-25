@@ -36,7 +36,7 @@ function expectBitmapsToBeEqual(imagePath, expectedImagePath) {
 
 **Important:** The recommended, more practical way of doing this, is by utilizing more advanced 3rd-party image snapshotting & comparison tools such as [applitools](https://applitools.com).
 
-## Device-Level Screenshots
+## Device-level Screenshots
 
 Taking a screenshot of the entire screen can be done using a device-level API:
 
@@ -65,7 +65,7 @@ Means of creation of the final image as an artifact is tightly connected to the 
 * In the other modes (`manual` and `all`), if the test passes, the screenshot will be put to `<artifacts-location>/✓ Members area should greet the member with an announcement/opened general section.png`.
 * In the other modes (`manual` and `all`), if the test fails, the screenshot will be put to `<artifacts-location>/✗ Members area should greet the member with an announcement/opened general section.png`.
 
-### Caveats of this approach
+### Caveats
 
 This API well-captures all elements, although alongside surrounding "visual noise" such as the navigation bar, as can be seen in the image below:
 
@@ -98,7 +98,7 @@ async function setDemoMode() {
 
 > Note: This script implicitly assumes only one device is used, as device ID isn't specified anywhere (e.g. with `adb -s <id>`).
 
-## Element-Level Screenshots (Android Only)
+## Element-level Screenshots (Android Only)
 
 Taking a screenshot of a specific element can be simply done using an API similar to other element-interaction Detox API's:
 
@@ -108,7 +108,7 @@ const imagePath = await element(by.id('announcementsRoot')).takeScreenshot('welc
 
 > The API works in the exact same way as `device.takeScreenshot()` does in terms of return value, arguments, and artifacts management.
 
-In this example, the image-file specified by `imagePath` will hold the visual content of a native view whose test ID is `announcementsRoot`, alonside all of the views in the view-hierarchy formed by it as the root-view. Visually, this can be, for example:
+In this example, the image-file specified by `imagePath` will hold the visual content of a native view whose test ID is `announcementsRoot`, alongside all of the views in the view-hierarchy formed by it as the root-view. Visually, this can be, for example:
 
 ![Announcements view](img/element-screenshot-view.png)
 
@@ -126,7 +126,7 @@ Taking an element-screenshot of the announcement part alone, would yield a prope
 
 ![announcement element](img/element-screenshot-view.png)
 
-Only by taking the element-screenshot of a common ancsetor, will this bug be surfaced. However, in turn, that can affect stability, as the result is now sensitive to more details such as padding and background color.
+Only by taking the element-screenshot of a common ancestor, will this bug be surfaced. However, in turn, that can affect stability, as the result is now sensitive to more details such as padding and background color.
 
 **As a bottom line, this API is mostly suited for testing UI components rather than complete screens.**
 

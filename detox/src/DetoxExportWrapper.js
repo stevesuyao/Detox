@@ -1,10 +1,10 @@
-const _ = require('lodash');
 const funpermaproxy = require('funpermaproxy');
 const Detox = require('./Detox');
 const DetoxConstants = require('./DetoxConstants');
 const configuration = require('./configuration');
 const logger = require('./utils/logger');
 const log = logger.child({ __filename });
+const { trace, traceCall } = require('./utils/trace');
 
 const _detox = Symbol('detox');
 const _shouldLogInitError = Symbol('shouldLogInitError');
@@ -30,11 +30,15 @@ class DetoxExportWrapper {
 
     this._defineProxy('by');
     this._defineProxy('device');
+
+    this.trace = trace;
+    this.traceCall = traceCall;
   }
 
   async init(configOverride, userParams) {
     let configError, exposeGlobals, resolvedConfig;
 
+    trace.init();
     logger.reinitialize(Detox.global);
 
     try {
@@ -59,7 +63,7 @@ class DetoxExportWrapper {
       }
 
       this[_detox] = new Detox(resolvedConfig);
-      await this[_detox].init();
+      await traceCall('detoxInit', () => this[_detox].init());
       Detox.none.setError(null);
 
       return this[_detox];
@@ -102,6 +106,26 @@ class DetoxExportWrapper {
   _suppressLoggingInitErrors() {
     this[_shouldLogInitError] = false;
     return this;
+  }
+}
+
+DetoxExportWrapper.prototype.globalInit = async function() {
+  try {
+    // TODO For the next consumer, need to come up with some kind of infra-code to allow for dynamic registration of init-callbacks.
+    const GenyCloudDriver = require('./devices/drivers/android/genycloud/GenyCloudDriver');
+    await GenyCloudDriver.globalInit();
+  } catch (error) {
+    log.warn({ event: 'GLOBAL_INIT' }, 'An error occurred trying to globally-init Genymotion-cloud emulator instances!', error);
+  }
+}
+
+DetoxExportWrapper.prototype.globalCleanup = async function() {
+  try {
+    // TODO For the next consumer, need to come up with some kind of infra-code to allow for dynamic registration of cleanup-callbacks.
+    const GenyCloudDriver = require('./devices/drivers/android/genycloud/GenyCloudDriver');
+    await GenyCloudDriver.globalCleanup();
+  } catch (error) {
+    log.warn({ event: 'GLOBAL_CLEANUP' }, 'An error occurred trying to shut down Genymotion-cloud emulator instances!', error);
   }
 }
 

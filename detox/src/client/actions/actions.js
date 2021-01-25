@@ -1,5 +1,6 @@
 const _ = require('lodash');
-const log = require('../../utils/logger').child({ __filename });
+const logger = require('../../utils/logger');
+const log = logger.child({ __filename });
 const bunyan = require('bunyan');
 const DetoxRuntimeError = require('../../errors/DetoxRuntimeError');
 
@@ -100,7 +101,7 @@ class Cleanup extends Action {
   }
 
   async handle(response) {
-    if (response.type !== 'testeeDisconnected') {
+    if (response.type !== 'appDisconnected') {
       this.expectResponseOfType('cleanupDone');
     }
   }
@@ -117,9 +118,9 @@ class Invoke extends Action {
         let message = 'Test Failed: ' + response.params.details;
         if (response.params.viewHierarchy) {
           /* istanbul ignore next */
-          message += (log.level() <= bunyan.DEBUG ?
-              '\nView Hierarchy:\n' + response.params.viewHierarchy :
-              '\nTIP: To print view hierarchy on failed actions/matches, use log-level verbose or higher.');
+          message += /^(debug|trace)$/.test(logger.getDetoxLevel())
+            ? '\nView Hierarchy:\n' + response.params.viewHierarchy
+            : '\nTIP: To print view hierarchy on failed actions/matches, use log-level verbose or higher.';
         }
 
         throw new Error(message);
@@ -128,7 +129,7 @@ class Invoke extends Action {
       case 'error':
         throw new Error(response.params.error);
       default:
-        throw new Error(`tried to invoke an action on testee, got an unsupported response: ${JSON.stringify(response)}`);
+        throw new Error(`tried to invoke an action on app, got an unsupported response: ${JSON.stringify(response)}`);
     }
   }
 }
@@ -160,11 +161,7 @@ class CurrentStatus extends Action {
 
   async handle(response) {
     this.expectResponseOfType(response, 'currentStatusResult');
-
-    //console.log("res:" + JSON.stringify(response, null, 2));
-    _.forEach(response.params.resources, (resource) => {
-      log.info({ class: 'CurrentStatus' }, `Sync ${resource.name}: ${resource.info.prettyPrint}`);
-    });
+    log.info({ class: 'CurrentStatus' }, response.params.status);
     return response;
   }
 }

@@ -64,7 +64,7 @@ Following device types could be used to control Android devices:
 
 - `android.attached`. Connect to already-attached android device. The device should be listed in the output of `adb devices` command under provided `name`.
   Use this type to connect to Genymotion emulator.
-  The `adbName` property accepts a regular expression pattern that allows to specify the pool of device candidates to which you wish to connect. Use this property to run tests in parallel on multiple attached devices.
+  The `avdName` property accepts a regular expression pattern that allows to specify the pool of device candidates to which you wish to connect. Use this property to run tests in parallel on multiple attached devices.
 
 For a complete, working example, refer to the [Detox example app](/examples/demo-react-native/detox.config.js).
 
@@ -210,9 +210,9 @@ For full details, refer to [Android's security-config guide](https://developer.a
 
 
 
-### 7. Proguard (Minification)
+### 7. Proguard (Minification, Obfuscation)
 
-In apps running [minification using Proguard](https://developer.android.com/studio/build/shrink-code), in order for Detox to work well on release builds, please enable some Detox proguard-configuration rules by applying the custom configuration file on top of your own. Typically, this is defined using the `proguardFiles` statement in the minification-enabled build-type in your `android/app/build.gradle`:
+In apps running [minification using Proguard](https://developer.android.com/studio/build/shrink-code), in order for Detox to work well on release builds, please enable some Detox proguard-configuration rules by applying the custom configuration file on top of your own. Typically, this is defined using the `proguardFiles` statement in the minification-enabled build-type in your `app/build.gradle`:
 
 ```groovy
     buildTypes {
@@ -229,7 +229,33 @@ In apps running [minification using Proguard](https://developer.android.com/stud
 
 ```
 
+:warning: **Note:** In order for Detox to be able to work properly, in `proguard-rules-app.pro`, it effectively declares rules that retain most of React-Native's code (i.e. keep it unminified, unobfuscated) in your **production** APK. Though generally speaking, this should not be an issue (as React-Native is an open-source project), there are ways around that, if it bothers you. For example, running your E2E over a build-type specifically designed to run E2E tests using Detox would do the trick -- roughly, like so (in `app/build.gradle`):
 
+```groovy
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            signingConfig signingConfigs.release
+        }
+        releaseE2E {
+            initWith release
+            setMatchingFallbacks('release')
+
+            proguardFile "${rootProject.projectDir}/../node_modules/detox/android/detox/proguard-rules-app.pro"
+        }
+    }
+```
+
+Here we utilize Gradle's `initWith` to easily define `releaseE2E` in a way that is identical to the `release` build-type, with the exception of considering Detox' `proguard-rules-app.pro` in the minification process.
+
+Following the example, you would then have to build your app using `gradlew assembleReleaseE2E` rather than `gradlew assembleRelease` before running Detox, and instruct Detox (i.e. via `binaryPath` in the Detox configuration file) to use the APK resulted specifically by *that* Gradle target (e.g. in `app/build/apk/releaseE2E/app-releaseE2E.apk` instead of the equivalent `app/build/apk/release/app-release.apk`).
+
+> Note: if you app contains flavours -- that makes things a bit trickier, but the approach can generally be adjusted to support that as well.
+
+**Last but not least:** If you're having issue with Detox' Proguard rules, please report them [here](https://github.com/wix/Detox/issues/new/choose).
+A special thanks to [GEllickson-Hover](https://github.com/GEllickson-Hover) for reporting issues related to obfuscation in [#2431](https://github.com/wix/Detox/issues/2431).
 
 ### 8. Test Butler Support (Optional)
 
@@ -434,7 +460,7 @@ More specifically, when this happens:
 3. The last reported Detox-logs before time-out would indicate the device failing to connect to the Detox tester on the host. For example:
 
 ```sh
-detox[12345] DEBUG: [DetoxServer.js/CANNOT_FORWARD] role=testee not connected, cannot fw action (sessionId=11111111-2222-3333-4444-555555555555)
+detox[12345] DEBUG: [DetoxServer.js/CANNOT_FORWARD] role=app not connected, cannot fw action (sessionId=11111111-2222-3333-4444-555555555555)
 ```
 
 * The main step for getting this fixed is to **revisit [step 6](#6-enable-clear-text-unencrypted-traffic-for-detox) in this guide**, which discusses network-security.
