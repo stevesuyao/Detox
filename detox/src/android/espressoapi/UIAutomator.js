@@ -30,6 +30,18 @@ class UiAutomator {
     };
   }
 
+  static findObjectByDescription(text) {
+    if (typeof text !== "string") throw new Error("text should be a string, but got " + (text + (" (" + (typeof text + ")"))));
+    return {
+      target: {
+        type: "Class",
+        value: "com.wix.detox.uiautomator.UiAutomator"
+      },
+      method: "findObjectByDescription",
+      args: [text]
+    };
+  }
+
   static findObjectContainsText(text) {
     if (typeof text !== "string") throw new Error("text should be a string, but got " + (text + (" (" + (typeof text + ")"))));
     return {

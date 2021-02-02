@@ -24,6 +24,22 @@ class UiObjectProxy {
     });
   }
 
+  byDescription(text) {
+   return new Proxy(uiObject, {
+      get: (target, prop) => {
+        if (target[prop] !== undefined) {
+          return async (...params) => {
+            const call = target[prop](invoke.callDirectly(uiAutomator.findObjectByDescription(text)), ...params);
+            const invokeResult = await this.invocationManager.execute(call);
+            if (invokeResult && invokeResult && invokeResult.result) {
+                return invokeResult.result;
+            }
+          }
+        }
+      }
+    });
+  }
+
   containsText(text) {
    return new Proxy(uiObject, {
       get: (target, prop) => {

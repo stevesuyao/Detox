@@ -33,6 +33,14 @@ public class UiAutomator {
       return uiObject;
     }
 
+    public static UiObject findObjectByDescription(String text) {
+      Log.i(TAG, "call findObjectByDescription method with text: " + text);
+      UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
+      UiObject uiObject = device.findObject(new UiSelector()
+        .description(text));
+      return uiObject;
+    }
+
     public static UiObject findObjectContainsText(String text) {
       Log.i(TAG, "call findObjectContainsText method with contained text: " + text);
       UiDevice device = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation());
